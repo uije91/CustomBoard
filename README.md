@@ -17,6 +17,7 @@
 </div>
 
 ## 2️⃣ERD
+![ERD](doc/board_erd.png)
 
 ## 3️⃣프로젝트 기능 및 설계
 
