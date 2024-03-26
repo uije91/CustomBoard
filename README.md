@@ -3,16 +3,18 @@
 사용자의 니즈(Needs)에 맞게 관리자가 게시판을 제공하고 이용할 수 있는 게시판입니다.
 
 ## 1️⃣Tech Stack
-
+<div>
 <img src="https://img.shields.io/badge/Java-000000?style=flat-square&logo=OpenJDK&logoColor=white"/>
 <img src="https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=Gradle&logoColor=white"/>
 <img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat-square&logo=SpringBoot&logoColor=white"/>
 <img src="https://img.shields.io/badge/Spring Security-6DB33F?style=flat-square&logo=SpringSecurity&logoColor=white"/>
-<br>
+</div>
+<div>
 <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white"/>
 <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=Redis&logoColor=white"/>
 <img src="https://img.shields.io/badge/Amazon S3-569A31?style=flat-square&logo=Amazon S3&logoColor=white"/>
 <img src="https://img.shields.io/badge/elasticsearch-005571?style=flat-square&logo=elasticsearch&logoColor=white"/>
+</div>
 
 ## 2️⃣ERD
 
@@ -129,3 +131,5 @@ Result:
 
 
 ## Trouble Shooting
+
+[go to the trouble shooting section](doc/TROUBLE_SHOOTING.md)
