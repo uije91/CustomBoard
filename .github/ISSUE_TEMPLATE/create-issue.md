@@ -1,7 +1,7 @@
 ---
-name: "\b[Feat] 이슈 제목"
+name: Create Issue
 about: Describe this issue template's purpose here.
-title: ''
+title: "[Feat/Refactor/Fix] 이슈 제목"
 labels: ''
 assignees: ''
 
