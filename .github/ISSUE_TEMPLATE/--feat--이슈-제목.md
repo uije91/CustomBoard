@@ -1,5 +1,5 @@
 ---
-name: Custom issue template
+name: "\b[Feat] 이슈 제목"
 about: Describe this issue template's purpose here.
 title: ''
 labels: ''
