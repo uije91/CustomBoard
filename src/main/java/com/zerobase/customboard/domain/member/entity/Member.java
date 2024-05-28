@@ -47,4 +47,8 @@ public class Member extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private Provider provider = LOCAL;
 
+
+  public void changeStatus(Status status) {
+    this.status = status;
+  }
 }

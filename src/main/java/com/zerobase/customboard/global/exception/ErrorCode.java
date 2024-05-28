@@ -6,7 +6,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
+  // Mail Error
+  CODE_NOT_FOUND(400, "인증번호가 존재하지 않습니다."),
 
+  // Member Error
   USER_NOT_FOUND(404, "회원 정보를 찾을 수 없습니다"),
   ALREADY_REGISTERED_USER(400, "이미 가입한 회원입니다."),
 
