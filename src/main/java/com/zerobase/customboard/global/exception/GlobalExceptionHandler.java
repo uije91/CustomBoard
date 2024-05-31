@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(CustomException.class)
   public ErrorResponse handleCustomException(CustomException e) {
-    log.error("Exception \"{}({})\" is occurred.", e.getErrorCode(), e.getErrorCode().getMessage());
+    log.error("Exception is occurred : \"{}({})\"", e.getErrorCode(), e.getErrorCode().getMessage());
 
     return new ErrorResponse(e.getErrorCode(), e.getErrorCode().getStatus(),
         e.getErrorCode().getMessage());
@@ -28,14 +28,14 @@ public class GlobalExceptionHandler {
         .stream()
         .map(DefaultMessageSourceResolvable::getDefaultMessage)
         .toList();
-    log.error("Exception \"{}({})\" is occurred.", BAD_REQUEST_VALID_ERROR, errors.get(0));
+    log.error("Exception is occurred : \"{}({})\"", BAD_REQUEST_VALID_ERROR, errors.get(0));
 
     return new ErrorResponse(BAD_REQUEST_VALID_ERROR, 400, errors.get(0));
   }
 
   @ExceptionHandler(Exception.class)
   public ErrorResponse handleException(Exception e) {
-    log.error("Exception {} is occurred.", e.getMessage());
+    log.error("Exception is occurred : {} ", e.getMessage());
 
     return new ErrorResponse(INTERNAL_SERVER_ERROR, 500, INTERNAL_SERVER_ERROR.getMessage());
   }

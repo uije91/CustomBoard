@@ -2,7 +2,7 @@ package com.zerobase.customboard.domain.member.entity;
 
 import static com.zerobase.customboard.domain.member.type.Provider.LOCAL;
 import static com.zerobase.customboard.domain.member.type.Role.USER;
-import static com.zerobase.customboard.domain.member.type.Status.INACTIVE;
+import static com.zerobase.customboard.domain.member.type.Status.ACTIVE;
 
 import com.zerobase.customboard.domain.member.type.Provider;
 import com.zerobase.customboard.domain.member.type.Role;
@@ -41,7 +41,7 @@ public class Member extends BaseEntity {
 
   @Builder.Default
   @Enumerated(EnumType.STRING)
-  private Status status = INACTIVE;
+  private Status status = ACTIVE;
 
   @Builder.Default
   @Enumerated(EnumType.STRING)
