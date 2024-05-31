@@ -24,7 +24,7 @@ public class MailController {
 
   private final MailService mailService;
 
-  @Operation(summary = "이메일 인증 API",description = "회원가입 인증코드 발송 API 입니다.")
+  @Operation(summary = "이메일 인증 API",description = "인증코드 발송 API 입니다.")
   @PostMapping("/certify/{email}")
   public ResponseEntity<?> certifySignup(
       @Parameter(name = "email", example = "test@test.com") @PathVariable String email) {
