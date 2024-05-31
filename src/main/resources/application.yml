@@ -54,3 +54,6 @@ springdoc:
     operations-sorter: method  # delete - get - patch - post - put 순으로 정렬, alpha를 사용하면 알파벳 순으로 정렬 가능
   paths-to-match:
     - /api/** # swagger-ui에 표시할 api의 엔드포인트 패턴
+
+jwt:
+  secret: 7JWI64WV7ZWY7IS47JqUIEN1c3RvbSBCb2FyZCDsnoXri4jri6QuIEpXVCDsi5ztgazrpr8g7YKk66W8IOunjOuTnOuKlCDspJHsnoXri4jri6QuIO2VreyDgSDsoovsnYDsnbzrp4wg6rCA65Od7ZWY7Iuc6ri4IOuwlOuejeuLiOuLpC4g7ZaJ67O17ZWY7IS47JqU
