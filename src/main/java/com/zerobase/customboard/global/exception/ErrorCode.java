@@ -14,6 +14,7 @@ public enum ErrorCode {
   ALREADY_REGISTERED_USER(400, "이미 가입한 회원입니다."),
   PASSWORD_NOT_MATCH(400, "비밀번호가 일치하지 않습니다"),
   AUTHENTICATE_YOUR_ACCOUNT(400, "인증된 사용자만 로그인 할 수 있습니다"),
+  INVALID_REFRESH_TOKEN(400,"잘못된 리프레시 토큰입니다"),
 
 
   // System Error

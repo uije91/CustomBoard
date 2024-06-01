@@ -56,6 +56,7 @@ public class SecurityConfig {
         antMatcher("/api/email/**"),
         antMatcher(POST, "/api/member/signup"),
         antMatcher(POST, "/api/member/login"),
+        antMatcher(POST, "/api/member/reissue"),
         antMatcher("/ws/**")
     );
     return requestMatchers.toArray(RequestMatcher[]::new);

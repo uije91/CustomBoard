@@ -12,4 +12,9 @@ public class TokenDto {
   private String accessToken;
   private String refreshToken;
 
+  @Getter
+  @Builder
+  public static class requestRefresh{
+    private String refreshToken;
+  }
 }

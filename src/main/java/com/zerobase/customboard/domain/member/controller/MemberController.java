@@ -3,7 +3,7 @@ package com.zerobase.customboard.domain.member.controller;
 import com.zerobase.customboard.domain.member.dto.LoginDto;
 import com.zerobase.customboard.domain.member.dto.SignupDto;
 import com.zerobase.customboard.domain.member.service.MemberService;
-import com.zerobase.customboard.global.jwt.JwtUtil;
+import com.zerobase.customboard.global.jwt.dto.TokenDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,11 +38,18 @@ public class MemberController {
     return ResponseEntity.ok(memberService.login(request));
   }
 
-  private final JwtUtil jwtUtil;
   @Operation(summary = "로그아웃 API")
   @PostMapping("/logout")
   public ResponseEntity<?> logout(HttpServletRequest request) {
     memberService.logout(request);
     return ResponseEntity.ok().build();
   }
+
+  @Operation(summary = "토큰재발급 API")
+  @PostMapping("/reissue")
+  public ResponseEntity<?> reissue(HttpServletRequest request,
+      @RequestBody TokenDto.requestRefresh refreshToken) {
+    return ResponseEntity.ok(memberService.reissue(request,refreshToken));
+  }
+
 }

@@ -2,6 +2,7 @@ package com.zerobase.customboard.domain.member.service;
 
 import static com.zerobase.customboard.global.exception.ErrorCode.ALREADY_REGISTERED_USER;
 import static com.zerobase.customboard.global.exception.ErrorCode.AUTHENTICATE_YOUR_ACCOUNT;
+import static com.zerobase.customboard.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
 import static com.zerobase.customboard.global.exception.ErrorCode.PASSWORD_NOT_MATCH;
 import static com.zerobase.customboard.global.exception.ErrorCode.USER_NOT_FOUND;
 
@@ -94,5 +95,26 @@ public class MemberService {
       redisService.deleteData(redisKey);
     }
     redisService.setDataExpire(accessToken, "logout", jwtUtil.getExpirationTime(accessToken));
+  }
+
+  public TokenDto reissue(HttpServletRequest request,TokenDto.requestRefresh refresh) {
+    String accessToken = jwtUtil.resolveToken(request);
+    String refreshToken = refresh.getRefreshToken();
+
+    if (!jwtUtil.validateToken(refreshToken)) {
+      log.error("[MemberService][reissue] : RefreshToken 검증 실패");
+      throw new CustomException(INVALID_REFRESH_TOKEN);
+    }
+
+    Authentication authentication = jwtUtil.getAuthentication(accessToken);
+    String email = authentication.getName();
+
+    String refreshTokenInRedis = redisService.getData("[RT]" + email);
+    if (!refreshToken.equals(refreshTokenInRedis)) {
+      log.error("[MemberService][reissue] : Redis에 저장된 RT와 가져온 RT가 불일치");
+      throw new CustomException(INVALID_REFRESH_TOKEN);
+    }
+
+    return generateToken(authentication);
   }
 }
