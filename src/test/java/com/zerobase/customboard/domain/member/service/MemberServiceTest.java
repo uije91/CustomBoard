@@ -2,9 +2,11 @@ package com.zerobase.customboard.domain.member.service;
 
 import static com.zerobase.customboard.global.exception.ErrorCode.ALREADY_REGISTERED_USER;
 import static com.zerobase.customboard.global.exception.ErrorCode.AUTHENTICATE_YOUR_ACCOUNT;
+import static com.zerobase.customboard.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
 import static com.zerobase.customboard.global.exception.ErrorCode.PASSWORD_NOT_MATCH;
 import static com.zerobase.customboard.global.exception.ErrorCode.USER_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -22,7 +24,6 @@ import com.zerobase.customboard.domain.member.entity.Member;
 import com.zerobase.customboard.domain.member.repository.MemberRepository;
 import com.zerobase.customboard.domain.member.type.Status;
 import com.zerobase.customboard.global.exception.CustomException;
-import com.zerobase.customboard.global.exception.ErrorCode;
 import com.zerobase.customboard.global.jwt.JwtUtil;
 import com.zerobase.customboard.global.jwt.dto.TokenDto;
 import com.zerobase.customboard.infra.service.RedisService;
@@ -40,7 +41,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -219,5 +219,83 @@ class MemberServiceTest {
     //then
     verify(redisService).deleteData(redisKey);
     verify(redisService).setDataExpire(eq(accessToken), eq("logout"), anyLong());
+  }
+
+  @Test
+  @DisplayName("토큰 재발급 성공")
+  void testReissue_success() throws Exception{
+    // given
+    String accessToken = "accessToken";
+    String refreshToken = "refreshToken";
+    String email = "test@test.com";
+
+    TokenDto.requestRefresh refresh = TokenDto.requestRefresh.builder()
+        .refreshToken(refreshToken).build();
+
+    Authentication authentication = mock(Authentication.class);
+    when(jwtUtil.resolveToken(request)).thenReturn(accessToken);
+    when(jwtUtil.validateToken(refreshToken)).thenReturn(true);
+    when(jwtUtil.getAuthentication(accessToken)).thenReturn(authentication);
+    when(authentication.getName()).thenReturn(email);
+    when(redisService.getData("[RT]" + email)).thenReturn(refreshToken);
+    when(jwtUtil.generateToken(authentication)).thenReturn(new TokenDto("newAccessToken", "newRefreshToken"));
+    when(jwtUtil.getExpirationTime("newRefreshToken")).thenReturn(1000L);
+
+    // when
+    TokenDto result = memberService.reissue(request, refresh);
+
+    //then
+    assertNotNull(result);
+    assertEquals("newAccessToken", result.getAccessToken());
+    assertEquals("newRefreshToken", result.getRefreshToken());
+    verify(redisService).deleteData("[RT]" + email);
+    verify(redisService).setDataExpire("[RT]" + email, "newRefreshToken", 1000L);
+  }
+
+  @Test
+  @DisplayName("토큰 재발급 실패 - 유효하지 않은 리프레시 토큰")
+  void testReissue_fail_invalidRefreshToken() throws Exception{
+    // given
+    String accessToken = "accessToken";
+    String refreshToken = "invalidRefreshToken";
+
+    TokenDto.requestRefresh refresh = TokenDto.requestRefresh.builder()
+        .refreshToken(refreshToken).build();
+
+    when(jwtUtil.resolveToken(request)).thenReturn(accessToken);
+    when(jwtUtil.validateToken(refreshToken)).thenReturn(false);
+
+    // when
+    CustomException exception = assertThrows(CustomException.class,
+        () -> memberService.reissue(request, refresh));
+    
+    //then
+    assertEquals(INVALID_REFRESH_TOKEN, exception.getErrorCode());
+  }
+  
+  @Test
+  @DisplayName("토큰 재발급 실패 - Reids의 RT와 불일치")
+  void testReissue_fail_refreshTokenMismatch() throws Exception{
+    // given
+    String accessToken = "accessToken";
+    String refreshToken = "refreshToken";
+    String email = "test@test.com";
+
+    TokenDto.requestRefresh refresh = TokenDto.requestRefresh.builder()
+        .refreshToken(refreshToken).build();
+
+    Authentication authentication = mock(Authentication.class);
+    when(jwtUtil.resolveToken(request)).thenReturn(accessToken);
+    when(jwtUtil.validateToken(refreshToken)).thenReturn(true);
+    when(jwtUtil.getAuthentication(accessToken)).thenReturn(authentication);
+    when(authentication.getName()).thenReturn(email);
+    when(redisService.getData("[RT]" + email)).thenReturn("differentRefreshToken");
+
+    // when
+    CustomException exception = assertThrows(CustomException.class,
+        () -> memberService.reissue(request, refresh));
+    
+    //then
+    assertEquals(INVALID_REFRESH_TOKEN, exception.getErrorCode());
   }
 }
