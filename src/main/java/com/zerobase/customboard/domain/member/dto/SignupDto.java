@@ -10,7 +10,7 @@ public class SignupDto {
   @Builder
   @Getter
   @Schema(name = "회원가입")
-  public static class request{
+  public static class signupRequest {
 
     @Schema(example = "test@test.com")
     @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,6}$",
