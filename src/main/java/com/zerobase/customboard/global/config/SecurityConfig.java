@@ -1,6 +1,8 @@
 package com.zerobase.customboard.global.config;
 
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 import com.zerobase.customboard.global.jwt.JwtAuthenticationFilter;
@@ -57,6 +59,7 @@ public class SecurityConfig {
         antMatcher(POST, "/api/member/signup"),
         antMatcher(POST, "/api/member/login"),
         antMatcher(POST, "/api/member/reissue"),
+        antMatcher(PUT,"/api/member/resign"),
         antMatcher("/ws/**")
     );
     return requestMatchers.toArray(RequestMatcher[]::new);
@@ -65,7 +68,10 @@ public class SecurityConfig {
   // 유저, 관리자 모두 접근 가능
   private RequestMatcher[] requestAuthenticated() {
     List<RequestMatcher> requestMatchers = List.of(
-        antMatcher(POST, "/api/member/logout")
+        antMatcher(POST, "/api/member/logout"),
+        antMatcher("/api/member/profile"),
+        antMatcher(PUT,"/api/member/change/password")
+
     );
     return requestMatchers.toArray(RequestMatcher[]::new);
   }
