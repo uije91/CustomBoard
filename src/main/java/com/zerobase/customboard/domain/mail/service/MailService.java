@@ -43,22 +43,18 @@ public class MailService {
   }
 
   // 인증번호 확인
-  public void certifyCheck(MailCheckDto check) {
-    if (redisService.getData(AUTH_CODE_PREFIX + check.getEmail()) == null) {
-      throw new CustomException(CODE_NOT_FOUND);
+  public boolean certifyCheck(MailCheckDto check) {
+    String authCode = redisService.getData(AUTH_CODE_PREFIX + check.getEmail());
+
+    if(authCode==null){
+      return false;
     }
 
-    if (redisService.getData(AUTH_CODE_PREFIX + check.getEmail()).equals(check.getCode())) {
+    if (authCode.equals(check.getCode())) {
       redisService.deleteData(AUTH_CODE_PREFIX + check.getEmail());
+      return true;
     }
-
-    Member member = memberRepository.findByEmail(check.getEmail())
-        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-
-    if(member.getStatus() == INACTIVE) {
-      member.changeStatus(ACTIVE);
-      memberRepository.save(member);
-    }
+    return false;
   }
 
   // 인증 메일 보내기
@@ -90,5 +86,6 @@ public class MailService {
     }
   }
 
+  //
 
 }

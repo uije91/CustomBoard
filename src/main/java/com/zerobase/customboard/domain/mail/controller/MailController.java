@@ -31,11 +31,10 @@ public class MailController {
     return ResponseEntity.ok(mailService.sendCertificationMail(email));
   }
 
-  @Operation(summary = "이메일 인증확인 API",description = "인증코드를 확인합니다.")
+  @Operation(summary = "이메일 인증확인 API",description = "인증여부를 확인합니다.")
   @PostMapping("/certify/check")
   public ResponseEntity<?> certifyCheck(@RequestBody @Valid MailCheckDto check) {
-    mailService.certifyCheck(check);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.ok(mailService.certifyCheck(check));
   }
 
 
