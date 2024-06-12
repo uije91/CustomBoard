@@ -1,9 +1,13 @@
 package com.zerobase.customboard.domain.member.controller;
 
-import com.zerobase.customboard.domain.member.dto.LoginDto;
+import com.zerobase.customboard.domain.member.dto.LoginDto.loginRequest;
+import com.zerobase.customboard.domain.member.dto.PasswordChangeDto;
+import com.zerobase.customboard.domain.member.dto.ProfileDto.profileRequest;
+import com.zerobase.customboard.domain.member.dto.ResignDto;
 import com.zerobase.customboard.domain.member.dto.SignupDto;
 import com.zerobase.customboard.domain.member.service.MemberService;
-import com.zerobase.customboard.global.jwt.dto.TokenDto;
+import com.zerobase.customboard.global.jwt.CustomUserDetails;
+import com.zerobase.customboard.global.jwt.dto.TokenDto.requestRefresh;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +15,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,14 +34,14 @@ public class MemberController {
 
   @Operation(summary = "회원가입 API")
   @PostMapping("/signup")
-  public ResponseEntity<?> signup(@RequestBody @Valid SignupDto.request request) {
+  public ResponseEntity<?> signup(@RequestBody @Valid SignupDto.signupRequest request) {
     memberService.signup(request);
     return ResponseEntity.ok().build();
   }
 
   @Operation(summary = "로그인 API")
   @PostMapping("/login")
-  public ResponseEntity<?> login(@RequestBody LoginDto.request request) {
+  public ResponseEntity<?> login(@RequestBody loginRequest request) {
     return ResponseEntity.ok(memberService.login(request));
   }
 
@@ -48,8 +55,36 @@ public class MemberController {
   @Operation(summary = "토큰재발급 API")
   @PostMapping("/reissue")
   public ResponseEntity<?> reissue(HttpServletRequest request,
-      @RequestBody TokenDto.requestRefresh refreshToken) {
-    return ResponseEntity.ok(memberService.reissue(request,refreshToken));
+      @RequestBody requestRefresh refreshToken) {
+    return ResponseEntity.ok(memberService.reissue(request, refreshToken));
+  }
+
+  @Operation(summary = "회원정보 조회 API")
+  @GetMapping("/profile")
+  public ResponseEntity<?> getProfile(@AuthenticationPrincipal CustomUserDetails principal) {
+    return ResponseEntity.ok(memberService.getProfile(principal));
+  }
+
+  @Operation(summary = "회원정보 수정 API")
+  @PutMapping("/profile")
+  public ResponseEntity<?> updateProfile(@AuthenticationPrincipal CustomUserDetails principal,
+      @RequestBody @Valid profileRequest request) {
+    memberService.updateProfile(principal, request);
+    return ResponseEntity.ok().build();
+  }
+
+  @Operation(summary = "회원탈퇴 API")
+  @PutMapping("/resign")
+  public ResponseEntity<?> resign(HttpServletRequest request, @RequestBody ResignDto password) {
+    memberService.resign(request, password);
+    return ResponseEntity.ok().build();
+  }
+
+  @Operation(summary = "비밀번호 변경 API")
+  @PutMapping("/change/password")
+  public ResponseEntity<?> changePassword(PasswordChangeDto passwordChangeDto) {
+    memberService.changePassword(passwordChangeDto);
+    return ResponseEntity.ok().build();
   }
 
 }

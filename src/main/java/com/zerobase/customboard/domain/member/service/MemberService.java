@@ -3,15 +3,21 @@ package com.zerobase.customboard.domain.member.service;
 import static com.zerobase.customboard.global.exception.ErrorCode.ALREADY_REGISTERED_USER;
 import static com.zerobase.customboard.global.exception.ErrorCode.AUTHENTICATE_YOUR_ACCOUNT;
 import static com.zerobase.customboard.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
+import static com.zerobase.customboard.global.exception.ErrorCode.NICKNAME_ALREADY_EXISTS;
 import static com.zerobase.customboard.global.exception.ErrorCode.PASSWORD_NOT_MATCH;
 import static com.zerobase.customboard.global.exception.ErrorCode.USER_NOT_FOUND;
 
-import com.zerobase.customboard.domain.member.dto.LoginDto;
-import com.zerobase.customboard.domain.member.dto.SignupDto;
+import com.zerobase.customboard.domain.member.dto.LoginDto.loginRequest;
+import com.zerobase.customboard.domain.member.dto.PasswordChangeDto;
+import com.zerobase.customboard.domain.member.dto.ProfileDto.profileRequest;
+import com.zerobase.customboard.domain.member.dto.ProfileDto.profileResponse;
+import com.zerobase.customboard.domain.member.dto.ResignDto;
+import com.zerobase.customboard.domain.member.dto.SignupDto.signupRequest;
 import com.zerobase.customboard.domain.member.entity.Member;
 import com.zerobase.customboard.domain.member.repository.MemberRepository;
 import com.zerobase.customboard.domain.member.type.Status;
 import com.zerobase.customboard.global.exception.CustomException;
+import com.zerobase.customboard.global.jwt.CustomUserDetails;
 import com.zerobase.customboard.global.jwt.JwtUtil;
 import com.zerobase.customboard.global.jwt.dto.TokenDto;
 import com.zerobase.customboard.infra.service.RedisService;
@@ -23,6 +29,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -35,7 +42,8 @@ public class MemberService {
   private final JwtUtil jwtUtil;
   private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-  public void signup(SignupDto.request request) {
+  // 회원가입
+  public void signup(signupRequest request) {
     memberRepository.findByEmail(request.getEmail()).ifPresent(m -> {
       throw new CustomException(ALREADY_REGISTERED_USER);
     });
@@ -50,7 +58,7 @@ public class MemberService {
     memberRepository.save(member);
   }
 
-  public TokenDto login(LoginDto.request request) {
+  public TokenDto login(loginRequest request) {
     Member member = memberRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
@@ -67,7 +75,6 @@ public class MemberService {
     Authentication authentication =
         authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
-    // 토큰 생성
     return generateToken(authentication);
   }
 
@@ -85,19 +92,18 @@ public class MemberService {
     return tokenDto;
   }
 
+  // 로그아웃
+  @Transactional
   public void logout(HttpServletRequest request) {
     String accessToken = jwtUtil.resolveToken(request);
     String email = jwtUtil.getAuthentication(accessToken).getName();
 
-    String redisKey = "[RT]" + email;
-    String refreshTokenInRedis = redisService.getData(redisKey);
-    if (refreshTokenInRedis != null) {
-      redisService.deleteData(redisKey);
-    }
-    redisService.setDataExpire(accessToken, "logout", jwtUtil.getExpirationTime(accessToken));
+    setTokenBlackList(email, accessToken);
   }
 
-  public TokenDto reissue(HttpServletRequest request,TokenDto.requestRefresh refresh) {
+  // 토큰 재발급
+  @Transactional
+  public TokenDto reissue(HttpServletRequest request, TokenDto.requestRefresh refresh) {
     String accessToken = jwtUtil.resolveToken(request);
     String refreshToken = refresh.getRefreshToken();
 
@@ -117,4 +123,79 @@ public class MemberService {
 
     return generateToken(authentication);
   }
+
+  // 회원정보 조회
+  public profileResponse getProfile(CustomUserDetails principal) {
+    Member member = memberRepository.findByEmail(principal.getUsername())
+        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
+    return profileResponse.builder()
+        .email(member.getEmail())
+        .nickname(member.getNickname())
+        .mobile(member.getMobile())
+        .build();
+  }
+
+  // 회원정보 수정
+  @Transactional
+  public void updateProfile(CustomUserDetails principal, profileRequest request) {
+    Member member = memberRepository.findByEmail(principal.getUsername())
+        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
+    if (request.getNickname() != null) {
+      if (memberRepository.existsByNickname(request.getNickname())) {
+        throw new CustomException(NICKNAME_ALREADY_EXISTS);
+      }
+      member.changeNickname(request.getNickname());
+    }
+
+    if (request.getPassword() != null) {
+      String encodedPassword = passwordEncoder.encode(request.getPassword());
+      member.changePassword(encodedPassword);
+    }
+
+    if (request.getMobile() != null) {
+      member.changeMobile(request.getMobile());
+    }
+
+    memberRepository.save(member);
+  }
+
+  // 회원 탈퇴
+  @Transactional
+  public void resign(HttpServletRequest request, ResignDto resignDto) {
+    String accessToken = jwtUtil.resolveToken(request);
+    String email = jwtUtil.getAuthentication(accessToken).getName();
+
+
+    Member member = memberRepository.findByEmail(email)
+        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
+    if (!passwordEncoder.matches(resignDto.getPassword(), member.getPassword())) {
+      throw new CustomException(PASSWORD_NOT_MATCH);
+    }
+
+    member.changeStatus(Status.RESIGN);
+    memberRepository.save(member);
+    setTokenBlackList(email, accessToken);
+  }
+
+  private void setTokenBlackList(String email, String accessToken) {
+    String redisKey = "[RT]" + email;
+    String refreshTokenInRedis = redisService.getData(redisKey);
+    if (refreshTokenInRedis != null) {
+      redisService.deleteData(redisKey);
+    }
+    redisService.setDataExpire(accessToken, "blackList", jwtUtil.getExpirationTime(accessToken));
+  }
+
+  // 비밀번호 변경
+  public void changePassword(PasswordChangeDto passwordChangeDto){
+    Member member = memberRepository.findByEmail(passwordChangeDto.getEmail())
+        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
+    member.changePassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
+    memberRepository.save(member);
+  }
+
 }

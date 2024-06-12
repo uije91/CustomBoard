@@ -48,6 +48,18 @@ public class Member extends BaseEntity {
   private Provider provider = LOCAL;
 
 
+  public void changePassword(String password){
+    this.password=password;
+  }
+
+  public void changeNickname(String nickname){
+    this.nickname=nickname;
+  }
+
+  public void changeMobile(String mobile){
+    this.mobile=mobile;
+  }
+
   public void changeStatus(Status status) {
     this.status = status;
   }

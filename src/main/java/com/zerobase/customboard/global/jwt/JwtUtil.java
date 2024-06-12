@@ -72,7 +72,7 @@ public class JwtUtil {
 
   public boolean validateToken(String token) {
     try {
-      if (redisService.getData(token) != null && !redisService.getData(token).equals("logout")) {
+      if (redisService.getData(token) != null && !redisService.getData(token).equals("blackList")) {
         return false;
       }
       Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token);

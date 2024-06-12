@@ -9,7 +9,7 @@ public class LoginDto {
   @Getter
   @Builder
   @Schema(name = "로그인")
-  public static class request {
+  public static class loginRequest {
 
     @Schema(example = "test@test.com")
     private String email;
