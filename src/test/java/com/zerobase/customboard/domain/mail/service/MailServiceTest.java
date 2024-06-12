@@ -4,13 +4,14 @@ import static com.zerobase.customboard.domain.member.type.Status.INACTIVE;
 import static com.zerobase.customboard.global.exception.ErrorCode.CODE_NOT_FOUND;
 import static com.zerobase.customboard.global.exception.ErrorCode.USER_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.zerobase.customboard.domain.mail.dto.MailCheckDto;
 import com.zerobase.customboard.domain.member.entity.Member;
@@ -45,58 +46,27 @@ class MailServiceTest {
   @Mock
   private RedisService redisService;
 
-  @Mock
-  private MemberRepository memberRepository;
-
 
   @Test
   @DisplayName("이메일 인증 확인")
   void testCertifyCheck_success() throws Exception {
     // given
     MailCheckDto check = new MailCheckDto("test@test.com", "123456");
-    Member member = Member.builder().email("test@test.com").status(INACTIVE).build();
+    given(redisService.getData("[AUTH_CODE]test@test.com")).willReturn("123456");
 
-    when(redisService.getData("[AUTH_CODE]test@test.com")).thenReturn("123456");
-    when(memberRepository.findByEmail("test@test.com")).thenReturn(Optional.ofNullable(member));
-
-    // when
-    mailService.certifyCheck(check);
-
-    //then
-    verify(memberRepository).findByEmail("test@test.com");
-    verify(memberRepository).save(any(Member.class));
-    assertEquals(Status.ACTIVE, Objects.requireNonNull(member).getStatus());
+    // when & then
+    assertTrue(mailService.certifyCheck(check));
   }
 
   @Test
-  @DisplayName("이메일 인증 실패 - 코드를 찾을 수 없음")
+  @DisplayName("이메일 인증 실패 - 다른 코드 입력")
   void testCertifyCheck_fail_codeNotFound() throws Exception {
     // given
-    MailCheckDto check = new MailCheckDto("test@test.com", "123456");
-    when(redisService.getData("[AUTH_CODE]test@test.com")).thenReturn(null);
+    MailCheckDto check = new MailCheckDto("test@test.com", "1234");
+    given(redisService.getData("[AUTH_CODE]test@test.com")).willReturn("123456");
 
-    // when
-    CustomException exception = assertThrows(CustomException.class,
-        () -> mailService.certifyCheck(check));
-
-    // then
-    assertEquals(CODE_NOT_FOUND, exception.getErrorCode());
-  }
-
-  @Test
-  @DisplayName("이메일 인증 실패 - 회원이 존재하지 않음")
-  void testCertifyCheck_fail_userNotFound() throws Exception {
-    // given
-    MailCheckDto check = new MailCheckDto("test@test.com", "123456");
-    when(redisService.getData("[AUTH_CODE]test@test.com")).thenReturn("123456");
-    when(memberRepository.findByEmail(check.getEmail())).thenReturn(Optional.empty());
-
-    // when
-    CustomException exception = assertThrows(CustomException.class,
-        () -> mailService.certifyCheck(check));
-
-    // then
-    assertEquals(USER_NOT_FOUND, exception.getErrorCode());
+    // when & then
+    assertFalse(mailService.certifyCheck(check));
   }
 
   @Test
@@ -107,7 +77,7 @@ class MailServiceTest {
     String subject = "Test Subject";
     String text = "Test Text";
 
-    when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    given(mailSender.createMimeMessage()).willReturn(mimeMessage);
 
     // when
     mailService.sendMail(email, subject, text);

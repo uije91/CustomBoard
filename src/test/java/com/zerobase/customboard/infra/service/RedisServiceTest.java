@@ -2,9 +2,9 @@ package com.zerobase.customboard.infra.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.DisplayName;
@@ -35,8 +35,8 @@ class RedisServiceTest {
     String key = "testKey";
     String expectedValue = "testValue";
 
-    when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-    when(valueOperations.get(key)).thenReturn(expectedValue);
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
+    given(valueOperations.get(key)).willReturn(expectedValue);
 
     // when
     String actualValue = redisService.getData(key);
@@ -67,7 +67,7 @@ class RedisServiceTest {
     String value = "testValue";
     long expired = 1000L;
 
-    when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
 
     // when
     redisService.setDataExpire(key,value,expired);
@@ -82,7 +82,7 @@ class RedisServiceTest {
     // given
     String key = "testKey";
 
-    when(redisTemplate.hasKey(key)).thenReturn(true);
+    given(redisTemplate.hasKey(key)).willReturn(true);
 
     // when
     boolean exists = redisService.existData(key);
