@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 
 public class SignupDto {
 
@@ -11,6 +12,8 @@ public class SignupDto {
   @Getter
   @Schema(name = "회원가입")
   public static class signupRequest {
+    @Schema(example = "")
+    private MultipartFile profileFile;
 
     @Schema(example = "test@test.com")
     @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,6}$",

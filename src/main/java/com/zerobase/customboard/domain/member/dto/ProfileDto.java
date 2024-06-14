@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 
 public class ProfileDto {
 
@@ -11,6 +12,8 @@ public class ProfileDto {
   @Builder
   @Schema(name = "회원정보 수정")
   public static class profileRequest{
+    private String profileImage;
+    private MultipartFile profileFile;
 
     @Schema(example = "영희")
     @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-zA-Z0-9-_]{2,10}$",
@@ -32,6 +35,7 @@ public class ProfileDto {
   @Builder
   @Schema(name = "회원정보 조회")
   public static class profileResponse{
+    private String profileImage;
     private String email;
     private String nickname;
     private String mobile;
