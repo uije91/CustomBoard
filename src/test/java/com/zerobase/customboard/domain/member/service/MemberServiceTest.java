@@ -73,9 +73,18 @@ class MemberServiceTest {
   @Mock
   private AuthenticationManager authenticationManager;
 
+  private loginRequest login;
+  private Member member;
+  private TokenDto token;
+  private signupRequest signup;
 
   @BeforeEach
   void setUp() {
+    signup = signupRequest.builder()
+        .email("test@test.com")
+        .nickname("철수")
+        .build();
+
     login = loginRequest.builder()
         .email("test@test.com")
         .password("password")
@@ -99,13 +108,12 @@ class MemberServiceTest {
   @DisplayName("회원가입 성공")
   void testSignup_success() {
     // given
-    signupRequest request = signupRequest.builder().email("test@test.com").build();
-
-    given(memberRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
-    given(passwordEncoder.encode(request.getPassword())).willReturn("encodedPassword");
+    given(memberRepository.findByEmail(signup.getEmail())).willReturn(Optional.empty());
+    given(memberRepository.existsByNickname(signup.getNickname())).willReturn(false);
+    given(passwordEncoder.encode(signup.getPassword())).willReturn("encodedPassword");
 
     // when
-    memberService.signup(request);
+    memberService.signup(signup);
 
     //then
     verify(memberRepository, times(1)).save(any(Member.class));
@@ -114,25 +122,35 @@ class MemberServiceTest {
   @Test
   @DisplayName("회원가입 실패 - 이미 존재하는 회원")
   void testSignup_fail_alreadyResignedUser() {
-    signupRequest request = signupRequest.builder().email("test@test.com").build();
 
     // given
-    given(memberRepository.findByEmail(request.getEmail())).willReturn(Optional.of(new Member()));
+    given(memberRepository.findByEmail(signup.getEmail())).willReturn(Optional.of(new Member()));
+
 
     // when
     CustomException exception = assertThrows(CustomException.class,
-        () -> memberService.signup(request));
+        () -> memberService.signup(signup));
 
     //then
     assertEquals(ALREADY_REGISTERED_USER, exception.getErrorCode());
     verify(memberRepository, never()).save(any(Member.class));
   }
 
+  @Test
+  @DisplayName("회원가입 실패 - 이미 존재하는 닉네임")
+  void testSignup_fail_nicknameAlreadyExists() {
+    // given
+    given(memberRepository.findByEmail(signup.getEmail())).willReturn(Optional.empty());
+    given(memberRepository.existsByNickname(signup.getNickname())).willReturn(true);
 
-  private loginRequest login;
-  private Member member;
-  private TokenDto token;
+    // when
+    CustomException exception = assertThrows(CustomException.class,
+        () -> memberService.signup(signup));
 
+    //then
+    assertEquals(NICKNAME_ALREADY_EXISTS, exception.getErrorCode());
+    verify(memberRepository, never()).save(any(Member.class));
+  }
 
   @Test
   @DisplayName("로그인 성공")
@@ -449,7 +467,7 @@ class MemberServiceTest {
 
   @Test
   @DisplayName("비밀번호 변경 성공")
-  void testChangePassword() throws Exception{
+  void testChangePassword() throws Exception {
     // given
     PasswordChangeDto request = PasswordChangeDto.builder()
         .email("test@test.com")

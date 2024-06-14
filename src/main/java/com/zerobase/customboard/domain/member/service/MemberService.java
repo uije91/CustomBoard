@@ -21,6 +21,7 @@ import com.zerobase.customboard.global.jwt.CustomUserDetails;
 import com.zerobase.customboard.global.jwt.JwtUtil;
 import com.zerobase.customboard.global.jwt.dto.TokenDto;
 import com.zerobase.customboard.infra.service.RedisService;
+import com.zerobase.customboard.infra.service.S3Service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,7 @@ public class MemberService {
   private final PasswordEncoder passwordEncoder;
   private final MemberRepository memberRepository;
   private final RedisService redisService;
+  private final S3Service s3Service;
   private final JwtUtil jwtUtil;
   private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
@@ -48,11 +50,21 @@ public class MemberService {
       throw new CustomException(ALREADY_REGISTERED_USER);
     });
 
+    if (memberRepository.existsByNickname(request.getNickname())) {
+      throw new CustomException(NICKNAME_ALREADY_EXISTS);
+    }
+
+    String imageUrl = null;
+    if (request.getProfileFile() != null) {
+      imageUrl = s3Service.uploadFile(request.getProfileFile(), request.getEmail() + "/profile");
+    }
+
     Member member = Member.builder()
         .email(request.getEmail())
         .nickname(request.getNickname())
         .password(passwordEncoder.encode(request.getPassword()))
         .mobile(request.getMobile())
+        .profileImage(imageUrl)
         .build();
 
     memberRepository.save(member);
@@ -133,6 +145,7 @@ public class MemberService {
         .email(member.getEmail())
         .nickname(member.getNickname())
         .mobile(member.getMobile())
+        .profileImage(member.getProfileImage())
         .build();
   }
 
@@ -158,6 +171,17 @@ public class MemberService {
       member.changeMobile(request.getMobile());
     }
 
+    if (request.getProfileFile() != null) { // 파일이 있을 경우
+      if (member.getProfileImage() != null) { // 기존 이미지가 있다면
+        s3Service.deleteFile(member.getProfileImage());
+      }
+      member.changeProfileImage(s3Service.uploadFile(request.getProfileFile(),
+          principal.getUsername() + "/profile"));
+    } else if (member.getProfileImage() != null) { // 새로운 파일이 없고 기존 이미지가 있다면
+      s3Service.deleteFile(member.getProfileImage());
+      member.changeProfileImage(null);
+    }
+
     memberRepository.save(member);
   }
 
@@ -166,7 +190,6 @@ public class MemberService {
   public void resign(HttpServletRequest request, ResignDto resignDto) {
     String accessToken = jwtUtil.resolveToken(request);
     String email = jwtUtil.getAuthentication(accessToken).getName();
-
 
     Member member = memberRepository.findByEmail(email)
         .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
@@ -190,7 +213,7 @@ public class MemberService {
   }
 
   // 비밀번호 변경
-  public void changePassword(PasswordChangeDto passwordChangeDto){
+  public void changePassword(PasswordChangeDto passwordChangeDto) {
     Member member = memberRepository.findByEmail(passwordChangeDto.getEmail())
         .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 

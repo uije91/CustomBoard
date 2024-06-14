@@ -4,7 +4,7 @@ import com.zerobase.customboard.domain.member.dto.LoginDto.loginRequest;
 import com.zerobase.customboard.domain.member.dto.PasswordChangeDto;
 import com.zerobase.customboard.domain.member.dto.ProfileDto.profileRequest;
 import com.zerobase.customboard.domain.member.dto.ResignDto;
-import com.zerobase.customboard.domain.member.dto.SignupDto;
+import com.zerobase.customboard.domain.member.dto.SignupDto.signupRequest;
 import com.zerobase.customboard.domain.member.service.MemberService;
 import com.zerobase.customboard.global.jwt.CustomUserDetails;
 import com.zerobase.customboard.global.jwt.dto.TokenDto.requestRefresh;
@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,7 +35,7 @@ public class MemberController {
 
   @Operation(summary = "회원가입 API")
   @PostMapping("/signup")
-  public ResponseEntity<?> signup(@RequestBody @Valid SignupDto.signupRequest request) {
+  public ResponseEntity<?> signup(@ModelAttribute @Valid signupRequest request) {
     memberService.signup(request);
     return ResponseEntity.ok().build();
   }
@@ -68,7 +69,7 @@ public class MemberController {
   @Operation(summary = "회원정보 수정 API")
   @PutMapping("/profile")
   public ResponseEntity<?> updateProfile(@AuthenticationPrincipal CustomUserDetails principal,
-      @RequestBody @Valid profileRequest request) {
+      @ModelAttribute @Valid profileRequest request) {
     memberService.updateProfile(principal, request);
     return ResponseEntity.ok().build();
   }
