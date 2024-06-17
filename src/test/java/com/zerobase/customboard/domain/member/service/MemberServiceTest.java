@@ -2,6 +2,8 @@ package com.zerobase.customboard.domain.member.service;
 
 import static com.zerobase.customboard.global.exception.ErrorCode.ALREADY_REGISTERED_USER;
 import static com.zerobase.customboard.global.exception.ErrorCode.AUTHENTICATE_YOUR_ACCOUNT;
+import static com.zerobase.customboard.global.exception.ErrorCode.CODE_NOT_FOUND;
+import static com.zerobase.customboard.global.exception.ErrorCode.INVALID_CODE;
 import static com.zerobase.customboard.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
 import static com.zerobase.customboard.global.exception.ErrorCode.NICKNAME_ALREADY_EXISTS;
 import static com.zerobase.customboard.global.exception.ErrorCode.PASSWORD_NOT_MATCH;
@@ -19,7 +21,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.zerobase.customboard.domain.member.dto.LoginDto.loginRequest;
-import com.zerobase.customboard.domain.member.dto.PasswordChangeDto;
+import com.zerobase.customboard.domain.member.dto.PasswordDto;
 import com.zerobase.customboard.domain.member.dto.ProfileDto.profileRequest;
 import com.zerobase.customboard.domain.member.dto.ResignDto;
 import com.zerobase.customboard.domain.member.dto.SignupDto.signupRequest;
@@ -466,22 +468,97 @@ class MemberServiceTest {
   }
 
   @Test
-  @DisplayName("비밀번호 변경 성공")
-  void testChangePassword() throws Exception {
+  @DisplayName("비밀번호 재설정 성공")
+  void testChangePassword_success() throws Exception {
     // given
-    PasswordChangeDto request = PasswordChangeDto.builder()
-        .email("test@test.com")
+    String email = "test@test.com";
+    String code = "123456";
+
+    PasswordDto password = PasswordDto.builder()
         .password("newPassword")
+        .passwordConfirm("newPassword")
         .build();
 
-    given(memberRepository.findByEmail(request.getEmail())).willReturn(Optional.of(member));
-    given(passwordEncoder.encode(request.getPassword())).willReturn("encodedPassword");
+
+    given(redisService.getData("[AUTH_CODE]"+email)).willReturn(code);
+    given(memberRepository.findByEmail(email)).willReturn(Optional.of(member));
 
     // when
-    memberService.changePassword(request);
+    memberService.changePassword(email,code,password);
 
     //then
-    assertEquals("encodedPassword", member.getPassword());
+    verify(memberRepository).save(member);
+    verify(redisService).deleteData("[AUTH_CODE]" + email);
+  }
+
+  @Test
+  @DisplayName("비밀번호 재설정 실패 - 비밀번호 불일치")
+  void testChangePassword_fail_passwordNotMatch() throws Exception {
+    // given
+    String email = "test@test.com";
+    String code = "123456";
+
+    PasswordDto password = PasswordDto.builder()
+        .password("newPassword1")
+        .passwordConfirm("newPassword2")
+        .build();
+
+
+    given(redisService.getData("[AUTH_CODE]"+email)).willReturn(code);
+    given(memberRepository.findByEmail(email)).willReturn(Optional.of(member));
+
+    // when
+    CustomException exception = assertThrows(CustomException.class,
+        () -> memberService.changePassword(email,code,password));
+
+    //then
+    assertEquals(PASSWORD_NOT_MATCH, exception.getErrorCode());
+  }
+
+  @Test
+  @DisplayName("비밀번호 재설정 실패 - 코드 불일치")
+  void testChangePassword_fail_invalidCode() throws Exception {
+    // given
+    String email = "test@test.com";
+    String code = "123456";
+
+    PasswordDto password = PasswordDto.builder()
+        .password("newPassword")
+        .passwordConfirm("newPassword")
+        .build();
+
+
+    given(redisService.getData("[AUTH_CODE]"+email)).willReturn("654321");
+
+    // when
+    CustomException exception = assertThrows(CustomException.class,
+        () -> memberService.changePassword(email,code,password));
+
+    //then
+    assertEquals(INVALID_CODE, exception.getErrorCode());
+  }
+
+  @Test
+  @DisplayName("비밀번호 재설정 실패 - 레디스에 존재하는 코드가 없음")
+  void testChangePassword_fail_notFoundCode() throws Exception {
+    // given
+    String email = "test@test.com";
+    String code = "123456";
+
+    PasswordDto password = PasswordDto.builder()
+        .password("newPassword")
+        .passwordConfirm("newPassword")
+        .build();
+
+
+    given(redisService.getData("[AUTH_CODE]"+email)).willReturn(null);
+
+    // when
+    CustomException exception = assertThrows(CustomException.class,
+        () -> memberService.changePassword(email,code,password));
+
+    //then
+    assertEquals(CODE_NOT_FOUND, exception.getErrorCode());
   }
 
 }

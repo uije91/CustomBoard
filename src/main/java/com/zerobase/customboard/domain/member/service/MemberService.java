@@ -2,13 +2,15 @@ package com.zerobase.customboard.domain.member.service;
 
 import static com.zerobase.customboard.global.exception.ErrorCode.ALREADY_REGISTERED_USER;
 import static com.zerobase.customboard.global.exception.ErrorCode.AUTHENTICATE_YOUR_ACCOUNT;
+import static com.zerobase.customboard.global.exception.ErrorCode.CODE_NOT_FOUND;
+import static com.zerobase.customboard.global.exception.ErrorCode.INVALID_CODE;
 import static com.zerobase.customboard.global.exception.ErrorCode.INVALID_REFRESH_TOKEN;
 import static com.zerobase.customboard.global.exception.ErrorCode.NICKNAME_ALREADY_EXISTS;
 import static com.zerobase.customboard.global.exception.ErrorCode.PASSWORD_NOT_MATCH;
 import static com.zerobase.customboard.global.exception.ErrorCode.USER_NOT_FOUND;
 
 import com.zerobase.customboard.domain.member.dto.LoginDto.loginRequest;
-import com.zerobase.customboard.domain.member.dto.PasswordChangeDto;
+import com.zerobase.customboard.domain.member.dto.PasswordDto;
 import com.zerobase.customboard.domain.member.dto.ProfileDto.profileRequest;
 import com.zerobase.customboard.domain.member.dto.ProfileDto.profileResponse;
 import com.zerobase.customboard.domain.member.dto.ResignDto;
@@ -43,6 +45,7 @@ public class MemberService {
   private final S3Service s3Service;
   private final JwtUtil jwtUtil;
   private final AuthenticationManagerBuilder authenticationManagerBuilder;
+  private final String BASE_IMAGE_URL = "https://custom-board.s3.ap-northeast-2.amazonaws.com/baseImage.png";
 
   // 회원가입
   public void signup(signupRequest request) {
@@ -54,8 +57,8 @@ public class MemberService {
       throw new CustomException(NICKNAME_ALREADY_EXISTS);
     }
 
-    String imageUrl = null;
-    if (request.getProfileFile() != null) {
+    String imageUrl = BASE_IMAGE_URL;
+    if (request.getProfileFile() != null && !request.getProfileFile().isEmpty()) {
       imageUrl = s3Service.uploadFile(request.getProfileFile(), request.getEmail() + "/profile");
     }
 
@@ -172,14 +175,14 @@ public class MemberService {
     }
 
     if (request.getProfileFile() != null) { // 파일이 있을 경우
-      if (member.getProfileImage() != null) { // 기존 이미지가 있다면
+      if (member.getProfileImage() != null && !member.getProfileImage().equals(BASE_IMAGE_URL)) { // 기존 이미지가 있다면
         s3Service.deleteFile(member.getProfileImage());
       }
       member.changeProfileImage(s3Service.uploadFile(request.getProfileFile(),
           principal.getUsername() + "/profile"));
-    } else if (member.getProfileImage() != null) { // 새로운 파일이 없고 기존 이미지가 있다면
+    } else if (member.getProfileImage() != null && !member.getProfileImage().equals(BASE_IMAGE_URL)) { // 새로운 파일이 없고 기존 이미지가 있다면
       s3Service.deleteFile(member.getProfileImage());
-      member.changeProfileImage(null);
+      member.changeProfileImage(BASE_IMAGE_URL);
     }
 
     memberRepository.save(member);
@@ -213,12 +216,32 @@ public class MemberService {
   }
 
   // 비밀번호 변경
-  public void changePassword(PasswordChangeDto passwordChangeDto) {
-    Member member = memberRepository.findByEmail(passwordChangeDto.getEmail())
+  public void changePassword(String email,String code, PasswordDto passwordDto) {
+    String redisInCode = redisService.getData("[AUTH_CODE]" + email);
+
+    if(redisInCode==null){
+      throw new CustomException(CODE_NOT_FOUND);
+    }
+    if(!redisInCode.equals(code)){
+      throw new CustomException(INVALID_CODE);
+    }
+
+    Member member = memberRepository.findByEmail(email)
         .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
-    member.changePassword(passwordEncoder.encode(passwordChangeDto.getPassword()));
+    if(!passwordDto.getPassword().equals(passwordDto.getPasswordConfirm())){
+      throw new CustomException(PASSWORD_NOT_MATCH);
+    }
+
+    String password = passwordEncoder.encode(passwordDto.getPassword());
+    member.changePassword(password);
     memberRepository.save(member);
+
+    redisService.deleteData("[AUTH_CODE]" + email);
   }
+
+
+
+
 
 }

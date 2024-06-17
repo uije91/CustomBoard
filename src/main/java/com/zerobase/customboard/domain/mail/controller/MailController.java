@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -35,6 +36,13 @@ public class MailController {
   @PostMapping("/certify/check")
   public ResponseEntity<?> certifyCheck(@RequestBody @Valid MailCheckDto check) {
     return ResponseEntity.ok(mailService.certifyCheck(check));
+  }
+
+  @Operation(summary = "비밀번호 찾기 API",description = "비밀번호 재설정 메일 발송 API 입니다.")
+  @PostMapping("/find")
+  public ResponseEntity<?> findPassword(
+      @Parameter(name = "email", example = "test@test.com") @RequestParam String email) {
+    return ResponseEntity.ok(mailService.sendFindPassword(email));
   }
 
 

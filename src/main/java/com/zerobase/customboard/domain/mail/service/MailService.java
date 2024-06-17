@@ -24,10 +24,10 @@ import org.springframework.stereotype.Service;
 public class MailService {
 
   private final JavaMailSender mailSender;
+  private final MemberRepository memberRepository;
   private final RedisService redisService;
   private final static Long VERIFICATION_EXPIRED = 60 * 3 * 1000L; // 3분
   private final static String AUTH_CODE_PREFIX = "[AUTH_CODE]";
-  private final MemberRepository memberRepository;
 
   // 인증 번호 생성
   private String createCode(String email) {
@@ -46,7 +46,7 @@ public class MailService {
   public boolean certifyCheck(MailCheckDto check) {
     String authCode = redisService.getData(AUTH_CODE_PREFIX + check.getEmail());
 
-    if(authCode==null){
+    if (authCode == null) {
       return false;
     }
 
@@ -86,6 +86,19 @@ public class MailService {
     }
   }
 
-  //
+  // 비밀번호 찾기
+  public String sendFindPassword(String email) {
+    memberRepository.findByEmail(email).orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
+    String code = createCode(email);
+    String url = "http://localhost:8080/api/member/password/email="+email+"&code="+code;
+    String subject = "[Custom Board] 비밀번호 재설정 인증 링크";
+    String text =
+        "안녕하세요. [Custom Board] 입니다.<p>"
+            + "아래 링크를 클릭하여 비밀번호 재설정을 진행해주세요<p>"
+            +"<a href = "+url+"> 인증하기 </a>";
+    sendMail(email, subject, text);
+    return code;
+  }
 
 }
