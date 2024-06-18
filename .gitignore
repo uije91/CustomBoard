@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+/src/main/java/com/zerobase/customboard/domain/chat
+
+/src/main/resources/application-private.yml
+/src/main/resources/data.sql
