@@ -1,4 +1,4 @@
-package com.zerobase.customboard.domain.member.type;
+package com.zerobase.customboard.global.type;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
