@@ -1,12 +1,7 @@
 package com.zerobase.customboard.domain.mail.service;
 
-import static com.zerobase.customboard.domain.member.type.Status.INACTIVE;
-import static com.zerobase.customboard.global.exception.ErrorCode.CODE_NOT_FOUND;
-import static com.zerobase.customboard.global.exception.ErrorCode.USER_NOT_FOUND;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -14,15 +9,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.zerobase.customboard.domain.mail.dto.MailCheckDto;
-import com.zerobase.customboard.domain.member.entity.Member;
-import com.zerobase.customboard.domain.member.repository.MemberRepository;
-import com.zerobase.customboard.domain.member.type.Status;
-import com.zerobase.customboard.global.exception.CustomException;
 import com.zerobase.customboard.infra.service.RedisService;
 import jakarta.mail.internet.MimeMessage;
 import java.security.SecureRandom;
-import java.util.Objects;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

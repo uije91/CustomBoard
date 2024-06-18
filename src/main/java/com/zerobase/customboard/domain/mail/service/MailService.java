@@ -1,12 +1,8 @@
 package com.zerobase.customboard.domain.mail.service;
 
-import static com.zerobase.customboard.domain.member.type.Status.ACTIVE;
-import static com.zerobase.customboard.domain.member.type.Status.INACTIVE;
-import static com.zerobase.customboard.global.exception.ErrorCode.CODE_NOT_FOUND;
 import static com.zerobase.customboard.global.exception.ErrorCode.USER_NOT_FOUND;
 
 import com.zerobase.customboard.domain.mail.dto.MailCheckDto;
-import com.zerobase.customboard.domain.member.entity.Member;
 import com.zerobase.customboard.domain.member.repository.MemberRepository;
 import com.zerobase.customboard.global.exception.CustomException;
 import com.zerobase.customboard.infra.service.RedisService;
