@@ -1,11 +1,9 @@
 package com.zerobase.customboard.global.scheduler;
 
-import static com.zerobase.customboard.domain.member.type.Status.RESIGN;
+import static com.zerobase.customboard.global.type.Status.RESIGN;
 
 import com.zerobase.customboard.domain.member.entity.Member;
 import com.zerobase.customboard.domain.member.repository.MemberRepository;
-import com.zerobase.customboard.domain.member.service.MemberService;
-import com.zerobase.customboard.domain.member.type.Status;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

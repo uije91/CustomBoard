@@ -1,7 +1,7 @@
 package com.zerobase.customboard.domain.member.repository;
 
 import com.zerobase.customboard.domain.member.entity.Member;
-import com.zerobase.customboard.domain.member.type.Status;
+import com.zerobase.customboard.global.type.Status;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;

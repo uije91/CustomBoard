@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "비밀번호 변경")
-public class PasswordChangeDto {
-  @Schema(example = "test@test.com")
-  private String email;
-
+public class PasswordDto {
   @Schema(example = "!234qwer")
   @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[~!@#$%^&*()+|=])[A-Za-z\\d~!@#$%^&*()+|=]{8,20}$",
       message = "비밀번호는 8~20자 영문,숫자,특수문자를 사용하세요.")
   private String password;
 
+  @Schema(example = "!234qwer")
+  @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[~!@#$%^&*()+|=])[A-Za-z\\d~!@#$%^&*()+|=]{8,20}$",
+      message = "비밀번호는 8~20자 영문,숫자,특수문자를 사용하세요.")
+  private String passwordConfirm;
 }

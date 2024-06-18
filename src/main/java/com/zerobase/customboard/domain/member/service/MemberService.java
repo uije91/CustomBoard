@@ -17,7 +17,7 @@ import com.zerobase.customboard.domain.member.dto.ResignDto;
 import com.zerobase.customboard.domain.member.dto.SignupDto.signupRequest;
 import com.zerobase.customboard.domain.member.entity.Member;
 import com.zerobase.customboard.domain.member.repository.MemberRepository;
-import com.zerobase.customboard.domain.member.type.Status;
+import com.zerobase.customboard.global.type.Status;
 import com.zerobase.customboard.global.exception.CustomException;
 import com.zerobase.customboard.global.jwt.CustomUserDetails;
 import com.zerobase.customboard.global.jwt.JwtUtil;
