@@ -1,7 +1,10 @@
 package com.zerobase.customboard.domain.post.service;
 
 import static com.zerobase.customboard.global.exception.ErrorCode.BOARD_NOT_FOUND;
+import static com.zerobase.customboard.global.exception.ErrorCode.DO_NOT_HAVE_PERMISSION;
+import static com.zerobase.customboard.global.exception.ErrorCode.POST_NOT_FOUND;
 import static com.zerobase.customboard.global.exception.ErrorCode.USER_NOT_FOUND;
+import static com.zerobase.customboard.global.type.Status.INACTIVE;
 
 import com.zerobase.customboard.domain.admin.entity.Board;
 import com.zerobase.customboard.domain.admin.repository.BoardRepository;
@@ -60,5 +63,19 @@ public class PostService {
         })
         .toList();
     imageRepository.saveAll(images);
+  }
+
+  public void deletePost(Long memberId, Long postId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new CustomException(POST_NOT_FOUND));
+
+    if(!post.getMember().equals(member)) {
+      throw new CustomException(DO_NOT_HAVE_PERMISSION);
+    }
+    post.changeStatus(INACTIVE);
+    postRepository.save(post);
   }
 }

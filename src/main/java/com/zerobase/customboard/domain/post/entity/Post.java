@@ -9,6 +9,8 @@ import com.zerobase.customboard.global.type.Status;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -46,6 +48,7 @@ public class Post extends BaseEntity {
   @JoinColumn(name = "member_id")
   private Member member;
 
+  @Enumerated(EnumType.STRING)
   @Builder.Default
   private Status status = ACTIVE;
 
@@ -61,4 +64,8 @@ public class Post extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "board_id")
   private Board board;
+
+  public void changeStatus(Status status){
+    this.status = status;
+  }
 }
