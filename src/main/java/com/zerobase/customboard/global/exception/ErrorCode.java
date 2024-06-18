@@ -6,8 +6,12 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
+  // Admin Error
+  BOARD_ALREADY_EXISTS(400,"게시판이 이미 존재합니다"),
+  BOARD_NOT_FOUND(404,"게시판이 존재하지 않습니다"),
+
   // Mail Error
-  CODE_NOT_FOUND(400, "인증번호가 존재하지 않습니다."),
+  CODE_NOT_FOUND(404, "인증번호가 존재하지 않습니다."),
 
   // Member Error
   USER_NOT_FOUND(404, "회원 정보를 찾을 수 없습니다"),
