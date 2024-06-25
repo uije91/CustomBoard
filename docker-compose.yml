@@ -1,0 +1,37 @@
+networks:
+  cb-network:  # 네트워크 이름을 정의합니다.
+
+services:
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - cb-network
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: project  # MySQL 환경 변수를 설정
+      MYSQL_ROOT_PASSWORD: "1234"  # MySQL 루트 비밀번호 설정
+      TZ: Asia/Seoul  # 타임존을 설정
+    networks:
+      - cb-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbit-mq
+    ports:
+      - "5672:5672" # AMQP Port
+      - "15672:15672" # Management Port
+      - "61613:61613" # STOMP PORT
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "RabbitMQ-My-Cookies"
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "rabbitPassword"
+    networks:
+      - cb-network
