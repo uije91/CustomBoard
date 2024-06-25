@@ -1,6 +1,9 @@
 package com.zerobase.customboard.domain.post.controller;
 
+import static org.springframework.data.domain.Sort.Direction.DESC;
+
 import com.zerobase.customboard.domain.post.dto.PostDto.writePostDto;
+import com.zerobase.customboard.domain.post.service.PostLikeService;
 import com.zerobase.customboard.domain.post.service.PostService;
 import com.zerobase.customboard.global.jwt.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
 
   private final PostService postService;
+  private final PostLikeService postLikeService;
 
   @Operation(summary = "게시글작성 API")
   @PostMapping()
@@ -61,4 +66,20 @@ public class PostController {
   public ResponseEntity<?> getPost(@PathVariable Long postId){
     return ResponseEntity.ok(postService.getPost(postId));
   }
+
+  @Operation(summary = "게시글 좋아요 API")
+  @PostMapping("/likes/{productId}")
+  public ResponseEntity<?> setPostLike(@PathVariable Long productId,
+      @AuthenticationPrincipal CustomUserDetails principal){
+    return ResponseEntity.ok(postLikeService.setPostLike(principal.getId(),productId));
+  }
+
+  @Operation(summary = "게시글 좋아요 목록 조회 API")
+  @GetMapping("/likes")
+  public ResponseEntity<?> getPostLikes(@AuthenticationPrincipal CustomUserDetails principal,
+      @PageableDefault(sort = "id", direction = DESC) Pageable pageable){
+    return ResponseEntity.ok(postLikeService.getPostLikes(principal.getId(),pageable));
+  }
+
+
 }
