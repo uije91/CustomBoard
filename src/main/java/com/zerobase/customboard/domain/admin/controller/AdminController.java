@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -37,8 +36,8 @@ public class AdminController {
   }
 
   @Operation(summary = "게시판 사용유무 변경 API",description = "게시판의 사용유무를 변경합니다.")
-  @PutMapping("/board")
-  public ResponseEntity<?> changeBoardStatus(@RequestParam Long boardId) {
+  @PutMapping("/board/{boardId}")
+  public ResponseEntity<?> changeBoardStatus(@PathVariable Long boardId) {
     adminService.changeBoardStatus(boardId);
     return ResponseEntity.ok().build();
   }
