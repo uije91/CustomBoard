@@ -42,7 +42,7 @@ public class Post extends BaseEntity {
   private String title;
   private String contents;
   @Builder.Default
-  private Long views = 0L;
+  private int views = 0;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id")
@@ -67,5 +67,9 @@ public class Post extends BaseEntity {
 
   public void changeStatus(Status status){
     this.status = status;
+  }
+
+  public void addView(){
+    this.views++;
   }
 }

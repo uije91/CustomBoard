@@ -5,6 +5,7 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
+import com.zerobase.customboard.global.type.Role;
 import com.zerobase.customboard.global.jwt.JwtAuthenticationFilter;
 import com.zerobase.customboard.global.jwt.JwtUtil;
 import java.util.List;
@@ -37,8 +38,9 @@ public class SecurityConfig {
         .httpBasic(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers(anyRequest()).permitAll()
-            .requestMatchers(requestAuthenticated()).authenticated())
+            .requestMatchers("/api/admin/**").hasAnyAuthority(Role.ADMIN.getKey())
+            .requestMatchers(requestAuthenticated()).authenticated()
+            .requestMatchers(anyRequest()).permitAll())
         .sessionManagement(configurer -> configurer
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(new JwtAuthenticationFilter(jwtUtil),
@@ -59,7 +61,10 @@ public class SecurityConfig {
         antMatcher(POST, "/api/member/signup"),
         antMatcher(POST, "/api/member/login"),
         antMatcher(POST, "/api/member/reissue"),
-        antMatcher(PUT,"/api/member/resign"),
+        antMatcher(PUT, "/api/member/resign"),
+        antMatcher("/api/member/password/*"),
+        antMatcher(GET, "/api/post/*"),
+        antMatcher(POST, "/api/post/*"),
         antMatcher("/ws/**")
     );
     return requestMatchers.toArray(RequestMatcher[]::new);
@@ -69,8 +74,9 @@ public class SecurityConfig {
   private RequestMatcher[] requestAuthenticated() {
     List<RequestMatcher> requestMatchers = List.of(
         antMatcher(POST, "/api/member/logout"),
-        antMatcher("/api/member/profile"),
-        antMatcher(PUT,"/api/member/change/password")
+        antMatcher(PUT,"/api/post/*"),
+        antMatcher(POST,"/api/post"),
+        antMatcher("/api/member/profile")
 
     );
     return requestMatchers.toArray(RequestMatcher[]::new);

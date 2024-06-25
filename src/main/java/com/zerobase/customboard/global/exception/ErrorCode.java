@@ -22,6 +22,10 @@ public enum ErrorCode {
   INVALID_REFRESH_TOKEN(400,"잘못된 리프레시 토큰입니다"),
   NICKNAME_ALREADY_EXISTS(400,"이미 존재하는 닉네임입니다" ),
 
+  // POST Error
+  POST_NOT_FOUND(404, "게시글이 존재하지 않습니다"),
+  DO_NOT_HAVE_PERMISSION(400, "권한이 없습니다"),
+
   // System Error
   INTERNAL_SERVER_ERROR(500, "내부 서버 오류가 발생했습니다."),
   BAD_REQUEST_VALID_ERROR(400, "유효성 검사에 실패했습니다."),
