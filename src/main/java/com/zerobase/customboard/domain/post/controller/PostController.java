@@ -40,7 +40,7 @@ public class PostController {
   @PostMapping()
   public ResponseEntity<?> writePost(@ModelAttribute @Valid writePostDto post,
       @AuthenticationPrincipal CustomUserDetails principal) {
-    postService.writePost(principal.getId(), post);
+    postService.createPost(principal.getId(), post);
     return ResponseEntity.ok().build();
   }
 
@@ -55,9 +55,7 @@ public class PostController {
   @Operation(summary = "게시글 목록 조회 API")
   @GetMapping("/{boardId}")
   public ResponseEntity<?> getPostList(@PathVariable Long boardId,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size){
-    Pageable pageable = PageRequest.of(page,size, Sort.by("id").descending());
+      @PageableDefault(sort = "id", direction = DESC) Pageable pageable){
     return ResponseEntity.ok(postService.getPostList(boardId,pageable));
   }
 

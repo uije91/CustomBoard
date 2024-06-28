@@ -74,7 +74,7 @@ class PostServiceTest {
 
   @Test
   @DisplayName("게시글 등록 성공")
-  void testWritePost_success() throws Exception {
+  void testCreatePost_success() throws Exception {
     // given
     List<MultipartFile> files = new ArrayList<>();
     files.add(
@@ -90,7 +90,7 @@ class PostServiceTest {
     given(boardRepository.findById(board.getId())).willReturn(Optional.of(board));
 
     // when
-    postService.writePost(member.getId(), post);
+    postService.createPost(member.getId(), post);
 
     //then
     verify(postRepository, times(1)).save(any(Post.class));
@@ -106,7 +106,6 @@ class PostServiceTest {
         .build();
 
     // given
-    given(memberRepository.findById(member.getId())).willReturn(Optional.of(member));
     given(postRepository.findById(any())).willReturn(Optional.of(post));
 
     // when
@@ -117,22 +116,20 @@ class PostServiceTest {
   }
 
   @Test
-  @DisplayName("게시글 삭제 실패 - 게시글 작성자가 아님")
+  @DisplayName("게시글 삭제 실패 - 작성자가 아님")
   void testDeletePost_fail_doNotHavePermission() {
-
-    Member member2 = new Member();
+    Long otherMemberId = 2L;
     Post post = Post.builder()
         .id(1L)
-        .member(member2)
+        .member(member)
         .build();
 
     // given
-    given(memberRepository.findById(member.getId())).willReturn(Optional.of(member));
     given(postRepository.findById(any())).willReturn(Optional.of(post));
 
     // when
     CustomException exception = assertThrows(CustomException.class,
-        () -> postService.deletePost(member.getId(), post.getId()));
+        () -> postService.deletePost(otherMemberId, post.getId()));
 
     //then
     assertEquals(DO_NOT_HAVE_PERMISSION, exception.getErrorCode());
@@ -174,9 +171,8 @@ class PostServiceTest {
     assertEquals("testContents", result.getContents());
     assertEquals("tester", result.getWriter());
     assertEquals(List.of("testUrl1", "testUrl2"), result.getPostImages());
-    assertEquals(6,result.getView());
-    assertEquals(2,result.getLikes());
-    assertEquals("2024.06.01 15:30:00",result.getPostTime());
+    assertEquals(6, result.getView());
+    assertEquals(2, result.getLikes());
+    assertEquals("2024.06.01 15:30:00", result.getPostTime());
   }
-
 }

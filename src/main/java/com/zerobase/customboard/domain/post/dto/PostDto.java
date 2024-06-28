@@ -44,7 +44,7 @@ public class PostDto {
   @Builder
   public static class postListDto {
 
-    private Long boardId;
+    private Long postId;
     private String title;
     private String writer;
     private String createdAt;
@@ -57,7 +57,7 @@ public class PostDto {
           : post.getCreatedAt().format(DateTimeFormatter.ofPattern("yy.MM.dd"));
 
       return postListDto.builder()
-          .boardId(post.getId())
+          .postId(post.getId())
           .title(post.getTitle())
           .writer(post.getMember().getNickname())
           .createdAt(postTime)

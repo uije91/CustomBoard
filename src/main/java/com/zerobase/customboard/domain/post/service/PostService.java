@@ -45,7 +45,7 @@ public class PostService {
 
 
   @Transactional
-  public void writePost(Long memberId, writePostDto writePostDto) {
+  public void createPost(Long memberId, writePostDto writePostDto) {
     Member member = memberRepository.findById(memberId)
         .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
@@ -75,13 +75,10 @@ public class PostService {
 
   @Transactional
   public void deletePost(Long memberId, Long postId) {
-    Member member = memberRepository.findById(memberId)
-        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
-
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> new CustomException(POST_NOT_FOUND));
 
-    if(!post.getMember().equals(member)) {
+    if(!post.getMember().getId().equals(memberId)) {
       throw new CustomException(DO_NOT_HAVE_PERMISSION);
     }
     post.changeStatus(INACTIVE);
