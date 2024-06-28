@@ -26,6 +26,9 @@ public enum ErrorCode {
   POST_NOT_FOUND(404, "게시글이 존재하지 않습니다"),
   DO_NOT_HAVE_PERMISSION(400, "권한이 없습니다"),
 
+  // Comment Error
+  COMMENT_NOT_FOUND(404,"작성한 댓글이 존재하지 않습니다."),
+
   // System Error
   INTERNAL_SERVER_ERROR(500, "내부 서버 오류가 발생했습니다."),
   BAD_REQUEST_VALID_ERROR(400, "유효성 검사에 실패했습니다."),

@@ -65,6 +65,7 @@ public class SecurityConfig {
         antMatcher("/api/member/password/*"),
         antMatcher(GET, "/api/post/*"),
         antMatcher(POST, "/api/post/*"),
+        antMatcher(GET, "/api/comment/*"),
         antMatcher("/ws/**")
     );
     return requestMatchers.toArray(RequestMatcher[]::new);
@@ -76,8 +77,10 @@ public class SecurityConfig {
         antMatcher(POST, "/api/member/logout"),
         antMatcher(PUT,"/api/post/*"),
         antMatcher(POST,"/api/post"),
-        antMatcher("/api/member/profile")
-
+        antMatcher("/api/post/likes/*"),
+        antMatcher("/api/member/profile"),
+        antMatcher("/api/comment"),
+        antMatcher(POST,"/api/comment/likes/*")
     );
     return requestMatchers.toArray(RequestMatcher[]::new);
   }
